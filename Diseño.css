@@ -1,0 +1,33 @@
+body{
+    background: #abf5ff /*Para saber si la animacion esta en pausa o no*/
+}
+
+td{
+    border: #eee solid 1px;
+}.contenedor-botones{
+    position: fixed;
+    font-size: 200%;
+    top: 10px;
+    left:  10px;
+}
+
+.btn{
+    cursor: pointer;
+    background: #abf5ff;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 90%;
+}
+
+.btn :hover{
+    background: white;
+    border-style: solid;
+    border-color: black;
+}
+
+.cambio{
+    background-color: #abffc4;
+}

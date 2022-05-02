@@ -1,0 +1,186 @@
+<!--Una celula viva con exactamente 2 o 3 celulas vecinas vivas, sobrevive,
+ de lo contrario muere-->
+
+ <!--Una celula muerta con exactamente 3 vecinas vivas, nace-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="Diseño.css">
+    <title>El juego de la vida de Conway</title>
+</head>
+<body>
+    <!--HTML-->
+    <div id="contenedor-tablero"></div>
+    <div class="contenedor-botones">
+        <div class="btn" id="btn1" onclick="intercambioreproduccion()">
+            <i class="far fa-play-circle"></i>
+        </div>
+        <div class="btn" id="btn2" onclick="siguienteestado()">
+            <i class="fas fa-step-forward"></i>
+        </div>
+        <div class="btn" id="btn3">
+            <i class="far fa-trash-alt" onclick="limpiar()"></i>
+        </div>
+    </div>
+
+
+    <!--Js-->
+    <script>
+
+        //Filas, Columnas y lados del tablero
+        let filas = 80
+        let columnas = 80
+        let lado = 20
+
+        //Funcion de control automatico del programa
+        let reproducir = false
+
+        //Recorrera todos los x y y del tablero 
+       let fotografia = []
+
+       document.addEventListener("keydown",(e)=>{//Control mediante el teclado
+           e.preventDefault//Evita el movimiento del scroll
+           switch (e.keyCode) {
+               //tecla de siguiente 39
+               case 39:
+                   siguienteestado();
+                   break;
+                //Tecla de p para reproducir 
+                case 67:
+                     intercambioreproduccion();
+                case 8:
+                    limpiar();
+               default:
+                   break;
+           }
+       }) 
+        //ciclo infinito
+       setInterval(() =>{
+        if(reproducir){
+            siguienteestado()
+        }
+       }, 200)
+
+       function intercambioreproduccion(){
+           reproducir = !reproducir
+           //conocer si se esta reproduciendo mediante el color del fondo
+           if(reproducir){
+               document.body.style.background = "#abffc4"
+               document.getElementById('btn1').classList.add('cambio');
+               document.getElementById('btn2').classList.add('cambio');
+               document.getElementById('btn3').classList.add('cambio');
+               //boton de pausa sera el btn1 aparecera mientras no se este reproduciendo
+               document.getElementById("btn1").innerHTML = `<i class="far fa-pause-circle"></i>`
+           }else{
+              document.body.style.background = "#abffc4"
+              document.getElementsByClassName("btn").background = "#abffc4"
+              document.getElementById("btn1").innerHTML = `<i class="far fa-play-circle"></i>`
+
+           }
+       }
+
+
+        generartablero()
+
+        //Funcion utilizada para crear el tablero de forma automatica
+        function generartablero() {
+            let html = "<table cellpadding=0 cellspacing=0 id='tablero'>"
+            for(let y = 0; y < filas; y++){
+                html += "<tr>"
+                for(let x = 0; x < columnas; x++){
+                    html += `<td id="celula-${x + "-" + y}"onmouseup="cambiarestado(${x}, ${y})">` 
+                    html += "</td>"
+                }
+                html += "</tr>"
+            }
+            html += "</table>"
+            let contenedor = document.getElementById("contenedor-tablero")
+            contenedor.innerHTML = html
+            let tablero = document.getElementById("tablero")
+            tablero.style.width = lado*columnas+"px"
+            tablero.style.height = lado*filas+"px"
+            
+        }
+
+        //Funcion que indica si una celda esta viva o muerta
+        function cambiarestado(x, y) {
+            let celula = document.getElementById(`celula-${x + "-" + y}`)
+            if(celula.style.background != "black"){
+                celula.style.background ="black"
+            }else{
+                celula.style.background = ""
+
+            }
+        }
+
+        //Funcion creada para limpiar el tablero una ve finalizado el proceso
+        function limpiar(){
+                for (let x = 0; x < columnas; x++) {
+                    for(let y = 0; y < columnas; y++) {
+                        let celula = document.getElementById(`celula-${x + "-" + y}`)
+                        celula.style.background = ""
+                    }
+                    
+                }
+        }
+
+
+        //Funcion para saber si la celula esta viva o muerta retornando verdadero
+        //o falso tomando el estado actual del tablero y clonarlo
+        function fotografiar(){
+            fotografia=[]
+                for (let x = 0; x < columnas; x++) {
+                    fotografia.push([])
+                    for(let y = 0; y < columnas; y++) {
+                        let celula = document.getElementById(`celula-${x + "-" + y}`)
+                        fotografia[x][y] = celula.style.background == "black"
+                    }
+                    
+                }
+        }
+
+        function contarvivas(x, y){
+            let vivas = 0
+            for (let i = -1; i <= 1; i++){
+                for (let j = -1; j <= 1; j++){
+                    if(i == 0 && j== 0)
+                    continue   
+                    try{
+                        if(fotografia[x+i][y+j]){
+                            vivas++
+                        }
+                    }catch (e){ }
+                    //3 es el numero para saber si una celula muere, no es necesario el seguir contando 
+                    if (vivas > 3) {
+                        return vivas
+                    }
+                }
+            }
+            return vivas
+        }
+
+        function siguienteestado(){
+            fotografiar()
+            for(let x = 0; x < columnas; x++) {
+                for(let y = 0; y < columnas; y++) {
+                    let vivas = contarvivas(x, y)
+                    let celula = document.getElementById(`celula-${x + "-" + y}`)
+                    if(fotografia[x][y]){ //celula esta viva
+                        if(vivas < 2 || vivas > 3)
+                        celula.style.background = ""//Muere por sobrepoblacion
+                    }else{//celula muerta
+                        if(vivas == 3)
+                        celula.style.background = "black" //revive
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
